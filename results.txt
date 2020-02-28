@@ -1,0 +1,31 @@
+Výsledky 7 vstupních souborů jsou uloženy do souboru : results
+Nahrávce s id 161121105402 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QSL                             96.09974026679993
+
+Nahrávce s id 170918145800 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QTV                             78.97091507911682
+
+Nahrávce s id 161120140404 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QQQ                             16.355229914188385
+
+Nahrávce s id 170602100123 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QIC                             47.236621379852295
+      QLX                             40.44203758239746
+
+Nahrávce s id 161219135808 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QHL                             85.22601127624512
+
+Nahrávce s id 170602103209 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QIC                             85.34832000732422
+
+Nahrávce s id 170404144526 jsou přiřazeny následující témata: 
+              Téma                    Pravděpodobnost
+      QSL                             37.13645339012146
+      QSM                             44.83497738838196
+

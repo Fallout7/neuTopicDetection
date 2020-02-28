@@ -1,0 +1,43 @@
+﻿Výsledky 7 vstupních souborů jsou uloženy do souboru : results
+Nahrávce s id 161219135808 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QTV                             1.4167703688144684
+      QLX                             1.955266296863556
+      QHL                             85.22602319717407
+
+Nahrávce s id 161121105402 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QSM                             1.6760703176259995
+      QLX                             3.406543657183647
+      QSL                             96.09974026679993
+
+Nahrávce s id 161120140404 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QTV                             4.372161254286766
+      QSY                             0.7096952758729458
+      QQQ                             16.355226933956146
+
+Nahrávce s id 170602103209 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QTV                             1.5098381787538528
+      QIC                             85.34832000732422
+      QST                             5.031682178378105
+
+Nahrávce s id 170918145800 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QTV                             78.9709210395813
+      QLX                             1.4750939793884754
+      QHL                             2.572823129594326
+
+Nahrávce s id 170602100123 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QSM                             2.819577045738697
+      QLX                             40.44203460216522
+      QIC                             47.23662734031677
+
+Nahrávce s id 170404144526 jsou přiřazeny následující témata: 
+              Téma                   Pravděpodobnost
+      QHL                             0.9272370487451553
+      QSM                             44.83496844768524
+      QSL                             37.13644742965698
+

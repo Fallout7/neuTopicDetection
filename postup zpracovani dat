@@ -1,0 +1,22 @@
+Načítání nahrávek:  
+	- pro mono případ je mlf soubor načten a text nahrávky uložen tak jak jde po sobě v daném souboru.
+	- pro případ stereo vstupu se načtnou oba soubory a slova nahrávky jsou seřazeny podle časů od 
+
+Přiřazení témat k nahrávce:
+	- ke každé nahrávce jsou přiřazena všechna témata obsažena v dané nahrávce (témata [u'QIO', u'QVO', u'QOS', u'Q.1', u'QOZ', u'QZK', u'QET', u'QPR', u'QON', u'Qsy', u'QMF', u'Q.V', u'QFO', u'Qin', u'QME', u'QDI', u'Qve', u'QSZ', u'QNN'] s méně než 300 nahrávkami jsou nahrazeny jedním tématem QQQ)
+
+Ke každé nahrávce vytvořen vektor reprezentující témata obsažená v nahrávce (např. [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1])
+
+Provedena lemmatizace nahrávek a vytvoření slovníku (vybráno 5000 slov s nejvyšší hodnotou MI).
+
+Vstupem neuronovky jsou vektory o velikosti 5000 (tf-idf) a vektory ryprezentující témata - rozděleno na train a valid data pomocí MultilabelStratifiedShuffleSplit.
+
+použité nastavení neuronové sítě: 1 vrstva relu o velikosti 128, výstupní vrstva sigmoid o velikosti 12 (podle počtu shluků), loss binary_crossentropy a optimizer je sgd
+
+Výstupní vektory jsou porovnávány se vstupními a to za pomoci F1 míry a Hamming Loss. Nejlépe se mi to podařilo natrénovat na: F1: 90%  Hamming Loss: 0.02188  
+
+Vytvořil jsem 2 spouštěcí soubory main.py a mainNew.py 
+
+V main.py lze vybrat počet témat který bude přiřazen nahrávce a i se získanými pravděpodobnostmi. Soubor mainNew.py vypíše ke každé nahrávce témata která mají pravděpodobnost nad prahem který byl získaný z validačních dat, tady ta úspěšnost F1 míry těch 90%. 
+	
+
