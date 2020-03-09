@@ -3,6 +3,7 @@
 import os, fnmatch, time, re, pickle, codecs, math, sklearn, chardet
 import numpy as np
 from ufal.morphodita import *
+from chardet.universaldetector import UniversalDetector
 
 
 class enc:
@@ -518,6 +519,113 @@ def UpravAVysictiTexty(souboryTextVstup, vstup, jazyk):
         vycistene, lemma, tags, lemmaJenSlov, vocabjazyku = pickle.load(open('PomocneSoubory/' + hlSb, "rb"))
     print(len(souboryTextVstup), len(vycistene), len(lemma), len(tags))
     return vycistene, lemmaJenSlov, tags
+
+def NacteniRawVstupu(kdeHledat):
+    souboryPS, slozkyPS = ZiskejNazvySouboru('PomocneSoubory/', kdeHledat + '.npy')
+    if len(souboryPS) == 0:
+        print('Načítání souborů, jejich názvů a originálních shluků složky ' + kdeHledat + ' a uložení. ')
+        hlSb = '*'
+        souboryPom, slozkyPom = ZiskejNazvySouboru(kdeHledat + '/', hlSb)
+
+        print(len(souboryPom), len(slozkyPom))
+        soubKon = {}
+        konf = 0
+        for sb in souboryPom:
+            if sb in soubKon:
+                konf = 1
+                break
+            else:
+                soubKon[sb] = sb
+
+        if konf == 1:
+            print('Nastal konflikt s názvy souborů (stejné názvy), začíná proces přejmenování souborů aby se tento konflikt vyřešil. ')
+
+            for i in range(len(souboryPom)):
+                os.rename(slozkyPom[i] + '/' + souboryPom[i], slozkyPom[i] + '/' + str(00) + str(i))
+            souboryPom, slozkyPom = ZiskejNazvySouboru(kdeHledat + '/', hlSb)
+
+        soubory = {}
+        souboryText = {}
+        pocet = 0
+        detector = UniversalDetector()
+        for i in range(len(slozkyPom)):
+            sl = slozkyPom[i]
+            poz = sl.rfind('/') + 1
+            if kdeHledat == 'VstupREUTERS':
+                patTitle = r"<TITLE>(.*?)</TITLE>"
+                patID = r'NEWID="(.*?)">'
+                patText = r'<BODY>(.*?)</BODY>'
+                zacatek = u'<REUTERS'
+                konec = u'</REUTERS>'
+                clanekPP = u''
+                parsuj = 0
+                codingGuess = (chardet.detect(open(sl + '/' + souboryPom[i], "rb").read()))
+                fileS = open(sl + '/' + souboryPom[i], "r", encoding=codingGuess['encoding'])
+                for radka in fileS:
+                    radkaPom = (replace_nonsense_characters(str(radka))).strip()
+                    #radkaPom = (replace_nonsense_characters(str(radka.decode("utf8")))).strip()
+                    najdiZacatek = re.findall(zacatek,radkaPom)
+                    najdiKonec = re.findall(konec,radkaPom)
+                    if parsuj == 0 and len(najdiZacatek) > 0:
+                        parsuj = 1
+                    if parsuj == 1:
+                        clanekPP += u' ' + radkaPom
+                    if parsuj == 1 and len(najdiKonec) > 0:
+                        parsuj = 0
+                        #title = re.findall(patTitle, clanekPP)[0]
+                        id = re.findall(patID, clanekPP)[0]
+                        jeText = (re.findall(patText, clanekPP))
+                        if not len(jeText) == 0:
+                            text = jeText[0]
+                            souboryText[id] = text.strip()
+                            soubory[id] = souboryPom[i]
+                        clanekPP = u''
+                fileS.close()
+            elif not kdeHledat.find('Vstup3raw') == -1:
+                clanekPP = u''
+                codingGuess = (chardet.detect(open(sl + '/' + souboryPom[i], "rb").read()))
+                fileS = open(sl + '/' + souboryPom[i], 'r', encoding=codingGuess['encoding'])
+                zacni = 0
+                poprve = 0
+                for radka in fileS:
+                    radka = str(radka)
+                    if zacni == 1:
+                        clanekPP += u' ' + (replace_nonsense_characters(radka))
+                    if radka == '' or radka == ' ' or radka == '\n':
+                        zacni = 1
+                    if poprve == 0:
+                        if not radka.find(u'Subject:') == -1:
+                            clanekPP += u' ' + (replace_nonsense_characters(radka))
+                            poprve = 1
+
+                fileS.close()
+                if len(clanekPP.strip().split()) < 20:
+                    pocet += 1
+                else:
+                    souboryText[souboryPom[i]] = clanekPP.strip()
+                    soubory[souboryPom[i]] = sl[poz:len(sl)]
+            else:
+                clanekPP = u''
+                codingGuess = (chardet.detect(open(sl + '/' + souboryPom[i], "rb").read()))
+                fileS = open(sl + '/' + souboryPom[i], "r", encoding=codingGuess['encoding'])
+                for radka in fileS:
+                    radka = str(radka)
+                    clanekPP += u' ' + replace_nonsense_characters(radka)
+                fileS.close()
+                '''
+                if len(clanekPP.strip().split()) < 20:
+                    pocet += 1
+                else:
+                '''
+                soubory[souboryPom[i]] = sl[poz:len(sl)]
+                souboryText[souboryPom[i]] = clanekPP.strip()
+        print(pocet)
+        np.save('PomocneSoubory/' + kdeHledat, [souboryText, soubory])
+    else:
+        print('Načítání souborů, jejich názvů a originálních shluků složky ' + kdeHledat + ' z již předem připraveného souboru. ')
+        souboryText, soubory = np.load('PomocneSoubory/' + kdeHledat + '.npy')
+
+    return souboryText, soubory
 
 def UpravAVysictiTexty2(souboryTextVstup):
     tagger = Tagger.load('czech-morfflex-pdt-161115.tagger')

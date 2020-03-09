@@ -136,34 +136,50 @@ def PredelejNaBiTriAtdGram(texty, kolikGram, posunOk):
         textyKolikGram[keyy] = slovakolikgram
     return textyKolikGram
 
-def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_name, epochs, batch_size, dropout, dropout2, un, un2, un3, soub):
+def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_name, epochs, batch_size, dropout, dropout2, un, un2, un3, soub, vstup):
     train_matrix_essays = tfidfTrain
     x_train = train_matrix_essays
     ypom = np.array(pozadVystupTrain)
-
     # jednoduché rozdělení
     vel = x_train.shape[0]
     velVal = int((vel / 100.0) * 25.0)
-    X_trainKon, X_validKon = x_train[0:(vel - velVal)], x_train[(vel - velVal):vel]
-    y_trainKon, y_validKon = ypom[0:(vel - velVal)], ypom[(vel - velVal):vel]
-    soubVal = soub[(vel - velVal):vel]
-
-    print(x_train.shape, ypom.shape, X_validKon.shape, y_validKon.shape)
+    pocTrain = vel - velVal
+    X_trainKon, X_validKon, y_trainKon, y_validKon, pouzPoz, soubVal = [], [], [], [], {}, []
+    while len(X_trainKon) + len(X_validKon) < vel:
+        pozNah = random.randint(0, vel-1)
+        if pozNah not in pouzPoz:
+            pouzPoz[pozNah] = pozNah
+            if len(X_trainKon) < pocTrain:
+                X_trainKon.append(x_train[pozNah])
+                y_trainKon.append(ypom[pozNah])
+            else:
+                X_validKon.append(x_train[pozNah])
+                y_validKon.append(ypom[pozNah])
+                soubVal.append(soub[pozNah])
+    X_trainKon = np.array(X_trainKon)
+    X_validKon = np.array(X_validKon)
+    y_trainKon = np.array(y_trainKon)
+    y_validKon = np.array(y_validKon)
+    #X_trainKon, X_validKon = x_train[0:(vel - velVal)], x_train[(vel - velVal):vel]
+    #y_trainKon, y_validKon = ypom[0:(vel - velVal)], ypom[(vel - velVal):vel]
+    #soubVal = soub[(vel - velVal):vel]
+    print("tady provedeno rozdělení")
+    print(X_trainKon.shape, y_trainKon.shape, X_validKon.shape, y_validKon.shape)
     x_trainNew, y_trainNew, soubNew = [], [], []
-    for i in range(len(x_train)):
+    for i in range(len(X_trainKon)):
         poc = 0
-        for hod in ypom[i]:
+        for hod in y_trainKon[i]:
             if hod == 1:
                 poc += 1
         if poc == 1:
-            x_trainNew.append(x_train[i])
-            y_trainNew.append(ypom[i])
+            x_trainNew.append(X_trainKon[i])
+            y_trainNew.append(y_trainKon[i])
         else:
             for j in range(poc):
-                x_trainNew.append(x_train[i])
-            for j in range(len(ypom[i])):
-                if ypom[i][j] == 1:
-                    vekpom = [0] * len(ypom[i])
+                x_trainNew.append(X_trainKon[i])
+            for j in range(len(y_trainKon[i])):
+                if y_trainKon[i][j] == 1:
+                    vekpom = [0] * len(y_trainKon[i])
                     vekpom[j] = 1
                     y_trainNew.append(vekpom)
     x_train, ypom = np.array(x_trainNew), np.array(y_trainNew)
@@ -294,7 +310,7 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
     bestPrahACC, bestPrahF1, bestPrahHamm = get_prah(y_valid_prah, predicted_probs_Valid)
 
     #y_valid = np.copy(y_validKonec)
-    print("Velikost relu vrstvy: " + str(un))
+    print("Vstup: " + vstup + "; velikost relu vrstvy: " + str(un) + "; batch size: " + str(batch_size))
     print(X_valid.shape)
     X_valid, y_valid = np.copy(X_validKon), np.copy(y_validKon)
     predicted_probs = model1.predict(X_valid)

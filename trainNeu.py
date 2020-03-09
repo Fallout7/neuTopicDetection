@@ -15,18 +15,39 @@ from sklearn.preprocessing import Normalizer
 
 jazyk = 'czech'
 vstup = 'TrainDataCeleNahravky'
+jazyk = 'english'
+vstup = 'Vstup3raw'
+vstup = 'Vstup3raw10NG'
 
 np.random.seed(1234)
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
-train_partition_name = "all" #"train"
-test_partition_name = "dev" #"dev"
+if jazyk == "czech":
+    textyNahravky, temataNahravky, vystupVek, temaToCislo, cisloToTema = np.load(vstup + '/vstupCeleNahravkyATemata.npy')
+    retezceTextyNahravky = {}
+    for id in textyNahravky:
+        retezceTextyNahravky[id] = u' '.join(textyNahravky[id])
+    vycisteneTexty, lemmaTexty, tagsTexty = UpravAVysictiTexty(retezceTextyNahravky, vstup, jazyk)
 
-textyNahravky, temataNahravky, vystupVek, temaToCislo, cisloToTema = np.load(vstup + '/vstupCeleNahravkyATemata.npy')
-retezceTextyNahravky = {}
-for id in textyNahravky:
-    retezceTextyNahravky[id] = u' '.join(textyNahravky[id])
-vycisteneTexty, lemmaTexty, tagsTexty = UpravAVysictiTexty(retezceTextyNahravky, vstup, jazyk)
+else:
+    soubAtextyRaw, soubAslozky = NacteniRawVstupu(vstup)
+
+    vycisteneTexty, lemmaTexty, tagsTexty = UpravAVysictiTexty(soubAtextyRaw, vstup, jazyk)
+
+    temaToCislo, cisloToTema, vystupVek, cis = {}, {}, {}, 0
+    for soub in soubAslozky:
+        tema = soubAslozky[soub]
+        if tema not in temaToCislo:
+            temaToCislo[tema] = cis
+            cisloToTema[cis] = tema
+            cis += 1
+    print(len(cisloToTema))
+    for soub in soubAslozky:
+        tema = soubAslozky[soub]
+        vekk = [0] * len(cisloToTema)
+        vekk[temaToCislo[tema]] = 1
+        vystupVek[soub] = vekk
+        print(vekk)
 
 for vek in lemmaTexty:
     for word in lemmaTexty[vek]:
@@ -121,10 +142,11 @@ epochs = 50000
 batch_size = 16
 dropout = 0.3
 dropout2 = 0.3
-un = 64
+un = 124
 un2 = 256
 un3 = 128
 un4 = 320
 
-neuProvedAUloz(tfidfMat, pozadVystup, num_classes, train_partition_name, epochs, batch_size, dropout, dropout2, un, un2, un3, nazvySoub)
-#neuProvedAUloz(tfidfMatLSA, pozadVystup, num_classes, train_partition_name, epochs, batch_size, dropout, dropout2, un, un2, un3, nazvySoub)
+train_partition_name = "trainPart"
+neuProvedAUloz(tfidfMat, pozadVystup, num_classes, train_partition_name, epochs, batch_size, dropout, dropout2, un, un2, un3, nazvySoub, vstup)
+#neuProvedAUloz(tfidfMatLSA, pozadVystup, num_classes, train_partition_name, epochs, batch_size, dropout, dropout2, un, un2, un3, nazvySoub, vstup)
