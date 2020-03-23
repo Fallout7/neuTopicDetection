@@ -4,7 +4,7 @@
 from predpriprava import *
 from evaluation import *
 from sklearn import svm
-import keras, h5py, random
+import keras, h5py, random, os
 import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
@@ -309,9 +309,17 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
     y_valid_prah = y_valid
     bestPrahACC, bestPrahF1, bestPrahHamm = get_prah(y_valid_prah, predicted_probs_Valid)
 
+    file_name = "Vysledky/Vysledky_" + vstup
+    if os.path.exists(file_name):
+        file_work = open(file_name, "a+")
+    else:
+        file_work = open(file_name, "w+")
+
     #y_valid = np.copy(y_validKonec)
     print("Vstup: " + vstup + "; velikost relu vrstvy: " + str(un) + "; batch size: " + str(batch_size))
     print(X_valid.shape)
+    file_work.write("Vstup: " + vstup + "; velikost relu vrstvy: " + str(un) + "; batch size: " + str(batch_size))
+    file_work.write("\n")
     X_valid, y_valid = np.copy(X_validKon), np.copy(y_validKon)
     predicted_probs = model1.predict(X_valid)
 
@@ -324,6 +332,11 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
 
     print('Výsledek NEU ACC: ' + str(acc) + ' s nastaveným prahem na: ' + str(bestPrahACC))
     print(f1_score(y_true=y_valid, y_pred=predictedAcc, average='weighted'), hamming_loss(y_valid, predictedAcc))
+    file_work.write('    Výsledek NEU ACC: ' + str(acc) + ' s nastaveným prahem na: ' + str(bestPrahACC))
+    file_work.write("\n")
+    file_work.write('    ' + f1_score(y_true=y_valid, y_pred=predictedAcc, average='weighted') + " " + hamming_loss(y_valid, predictedAcc))
+    file_work.write("\n")
+    file_work.write("\n")
     for i in range(10):
         print(soubVal[i])
         print(list(predictedAcc[i]))
@@ -346,6 +359,11 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
         print(list(y_valid[i]))
         print(list(predicted_probs[i]))
         print("")
+    file_work.write('    Výsledek NEU F1: ' + str(f1) + ' s nastaveným prahem na: ' + str(bestPrahF1))
+    file_work.write("\n")
+    file_work.write('    ' + acc + " " + hamming_loss(y_valid, predictedf1))
+    file_work.write("\n")
+    file_work.write("\n")
 
     print('Výsledek NEU HammLoss: ' + str(hammmL) + ' s nastaveným prahem na: ' + str(bestPrahHamm))
     poc, pocShod = 0.0, 0.0
@@ -365,5 +383,13 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
         print(list(predictedHamm[i]))
         print(list(y_valid[i]))
         print("")
+    file_work.write('    Výsledek NEU HammLoss: ' + str(hammmL) + ' s nastaveným prahem na: ' + str(bestPrahHamm))
+    file_work.write("\n")
+    file_work.write('    ' + acc + " " + f1_score(y_true=y_valid, y_pred=predictedHamm, average='weighted'))
+    file_work.write("\n")
+    file_work.write("\n")
+    file_work.write("\n")
+    file_work.write("\n")
+    file_work.close()
 #nejlepší výsledky s velikostí LSA 500 a relu vrstvou 128 a sigmoid a sgd -- dole otevřené a uložená neu a matice v naki ujcskriptTest
 # teď zkouška ještě s celou tfidf maticí, tady o velikosti 128 relu a v terminalu o vel 512 a znova tady o velikosti 1024

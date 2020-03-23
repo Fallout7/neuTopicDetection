@@ -15,9 +15,9 @@ from sklearn.preprocessing import Normalizer
 
 jazyk = 'czech'
 vstup = 'TrainDataCeleNahravky'
-jazyk = 'english'
-vstup = 'Vstup3raw'
-vstup = 'Vstup3raw10NG'
+#jazyk = 'english'
+#vstup = 'Vstup3raw'
+#vstup = 'Vstup3raw10NG'
 
 np.random.seed(1234)
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
@@ -139,10 +139,10 @@ maticeCelaTFIDFaD2V = np.append(tfidfMat, maticeDoc2VecVah, axis=1)
 '''
 
 epochs = 50000
-batch_size = 16
+batch_size = 8
 dropout = 0.3
 dropout2 = 0.3
-un = 124
+un = 1024
 un2 = 256
 un3 = 128
 un4 = 320
