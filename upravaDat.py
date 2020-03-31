@@ -241,42 +241,43 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
                 y_valid_pom.append(j)
 
 
+    file_neu_name = vstup + '_neu_model_' + str(un) + "_" + str(batch_size) + '.h5'
+    souboryPS, slozkyPS = ZiskejNazvySouboru("PomocneSouboryNeu/", file_neu_name)
+    if len(souboryPS) == 0:
+        model_path = ('PomocneSoubNeu/NNessey_model1_trigram50tis_{ep}epochs{ba}batch.h5')
+        train_model_path = model_path.format(partition=train_partition_name, ep=epochs, ba=batch_size)
 
-    model_path = ('PomocneSoubNeu/NNessey_model1_trigram50tis_{ep}epochs{ba}batch.h5')
-    train_model_path = model_path.format(partition=train_partition_name, ep=epochs, ba=batch_size)
+        x_train = x_train.astype('float32')
 
-    x_train = x_train.astype('float32')
+        model1 = Sequential()  # uz neni jina moznost modelu
+        model1.add(Dense(units=un, activation='relu', input_dim=x_train.shape[1], name='dense_1')) #nejlepší druhé spuštění s tanh a softmax a rmsprop optimizerem
+        model1.add(Dropout(dropout, name='dropout_1'))
+        #model1.add(Dense(units=un2, activation='relu', name='dense_2'))  # nejlepší druhé spuštění s tanh a softmax a rmsprop optimizerem
+        #model1.add(Dropout(dropout2, name='dropout_2'))
+        #model1.add(Dense(units=un3, activation='relu', name='dense_3'))  # nejlepší druhé spuštění s tanh a softmax a rmsprop optimizerem
+        #model1.add(Dropout(dropout, name='dropout_3'))
+        #zkusit popřípadě batch normalizaci
 
-    model1 = Sequential()  # uz neni jina moznost modelu
-    model1.add(Dense(units=un, activation='relu', input_dim=x_train.shape[1], name='dense_1')) #nejlepší druhé spuštění s tanh a softmax a rmsprop optimizerem
-    model1.add(Dropout(dropout, name='dropout_1'))
-    #model1.add(Dense(units=un2, activation='relu', name='dense_2'))  # nejlepší druhé spuštění s tanh a softmax a rmsprop optimizerem
-    #model1.add(Dropout(dropout2, name='dropout_2'))
-    #model1.add(Dense(units=un3, activation='relu', name='dense_3'))  # nejlepší druhé spuštění s tanh a softmax a rmsprop optimizerem
-    #model1.add(Dropout(dropout, name='dropout_3'))
-    #zkusit popřípadě batch normalizaci
+        model1.add(Dense(num_classes, activation='sigmoid', name='dense_5'))
 
-    model1.add(Dense(num_classes, activation='sigmoid', name='dense_5'))
+        sgd = keras.optimizers.SGD(lr=0.001, decay=0, momentum=0.9, nesterov=True)
+        rmspropOpt = keras.optimizers.RMSprop(lr=0.001, epsilon=None, decay=0.0)
+        model1.compile(loss="binary_crossentropy", optimizer=sgd,
+                       metrics=['accuracy'])  # nstaveni ucici algoritmus
 
-    sgd = keras.optimizers.SGD(lr=0.001, decay=0, momentum=0.9, nesterov=True)
-    rmspropOpt = keras.optimizers.RMSprop(lr=0.001, epsilon=None, decay=0.0)
-    model1.compile(loss="binary_crossentropy", optimizer=sgd,
-                   metrics=['accuracy'])  # nstaveni ucici algoritmus
+        reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.01, patience=50, verbose=1, mode='auto', cooldown=0, min_lr=0.001)#, restore_best_weights=True)
+        early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=100, verbose=1, restore_best_weights=True)
 
-    reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.01, patience=50, verbose=1, mode='auto', cooldown=0, min_lr=0.001)#, restore_best_weights=True)
-    early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=100, verbose=1, restore_best_weights=True)
+        history1 = model1.fit(X_train, y_train,
+                              batch_size=batch_size,
+                              epochs=epochs,
+                              verbose=2, callbacks=[reduce_lr, early_stop], validation_data=(X_valid, y_valid))  # natrenuj  .. v priade nevejde do mpameti ...  misto fit train_on_batch (nutne zabespecit nastaveni trenovani)
 
-    history1 = model1.fit(X_train, y_train,
-                          batch_size=batch_size,
-                          epochs=epochs,
-                          verbose=2, callbacks=[reduce_lr, early_stop], validation_data=(X_valid, y_valid))  # natrenuj  .. v priade nevejde do mpameti ...  misto fit train_on_batch (nutne zabespecit nastaveni trenovani)
-
-    model1.save('neu_model_' + str(un) + '.h5')
+        model1.save("PomocneSouboryNeu/" + file_neu_name)
 
 
-
-
-    #model1 = load_model('neu_model_' + str(un) + '.h5')
+    else:
+        model1 = load_model("PomocneSouboryNeu/" + file_neu_name)
 
 
 
@@ -334,7 +335,7 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
     print(f1_score(y_true=y_valid, y_pred=predictedAcc, average='weighted'), hamming_loss(y_valid, predictedAcc))
     file_work.write('    Výsledek NEU ACC: ' + str(acc) + ' s nastaveným prahem na: ' + str(bestPrahACC))
     file_work.write("\n")
-    file_work.write('    ' + f1_score(y_true=y_valid, y_pred=predictedAcc, average='weighted') + " " + hamming_loss(y_valid, predictedAcc))
+    file_work.write('    ' + str(f1_score(y_true=y_valid, y_pred=predictedAcc, average='weighted')) + " " + str(hamming_loss(y_valid, predictedAcc)))
     file_work.write("\n")
     file_work.write("\n")
     for i in range(10):
@@ -361,7 +362,7 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
         print("")
     file_work.write('    Výsledek NEU F1: ' + str(f1) + ' s nastaveným prahem na: ' + str(bestPrahF1))
     file_work.write("\n")
-    file_work.write('    ' + acc + " " + hamming_loss(y_valid, predictedf1))
+    file_work.write('    ' + str(acc) + " " + str(hamming_loss(y_valid, predictedf1)))
     file_work.write("\n")
     file_work.write("\n")
 
@@ -385,7 +386,7 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
         print("")
     file_work.write('    Výsledek NEU HammLoss: ' + str(hammmL) + ' s nastaveným prahem na: ' + str(bestPrahHamm))
     file_work.write("\n")
-    file_work.write('    ' + acc + " " + f1_score(y_true=y_valid, y_pred=predictedHamm, average='weighted'))
+    file_work.write('    ' + str(acc) + " " + str(f1_score(y_true=y_valid, y_pred=predictedHamm, average='weighted')))
     file_work.write("\n")
     file_work.write("\n")
     file_work.write("\n")

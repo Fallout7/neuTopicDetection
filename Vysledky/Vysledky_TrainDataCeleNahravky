@@ -1,0 +1,2 @@
+Vstup: TrainDataCeleNahravky; velikost relu vrstvy: 1024; batch size: 8
+    Výsledek NEU ACC: 69.39071566731141 s nastaveným prahem na: 0.05000000000000004
