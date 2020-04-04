@@ -624,6 +624,7 @@ def NacteniRawVstupu(kdeHledat):
     else:
         print('Načítání souborů, jejich názvů a originálních shluků složky ' + kdeHledat + ' z již předem připraveného souboru. ')
         souboryText, soubory = np.load('PomocneSoubory/' + kdeHledat + '.npy')
+        
 
     return souboryText, soubory
 
