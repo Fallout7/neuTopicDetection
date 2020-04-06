@@ -39,30 +39,6 @@ if jazyk == "czech":
 
 else:
     if vstup == "MovieSum":
-        nltk.download('stopwords')
-        REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;]')
-        BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
-        STOPWORDS = set(stopwords.words('english'))
-        
-        def clean_text(text):
-            text = BeautifulSoup(text, "lxml").text # HTML decoding
-            text = text.lower() # lowercase text
-            text = REPLACE_BY_SPACE_RE.sub(' ', text) # replace REPLACE_BY_SPACE_RE symbols by space in text
-            text = BAD_SYMBOLS_RE.sub('', text) # delete symbols which are in BAD_SYMBOLS_RE from text
-            text = ' '.join(word for word in text.split() if word not in STOPWORDS) # delete stopwors from text
-            return text
-
-        def stemming(sentence):
-            stemmer = SnowballStemmer("english")
-            stemSentence = ""
-            stem = ""
-            for word in sentence.split():
-                stem = stemmer.stem(word)
-            stemSentence += stem
-            stemSentence += " "
-            stemSentence = stemSentence.strip()
-            return stemSentence
-
         meta = pd.read_csv("MovieSummaries/movie.metadata.tsv", sep = '\t', header = None)
         meta.columns = ["movie_id",1,"movie_name",3,4,5,6,7,"genre"]
         genres = meta[["movie_id","movie_name","genre"]]
@@ -76,26 +52,47 @@ else:
             genres_lists.append(list(json.loads(i).values()))
         
         soubAtextyRaw, soubAslozky = {}, {}
-        temaToCislo, cisloToTema, vystupVek, cis = {}, {}, {}, 0
+        temaToCislo, cisloToTema, vystupVek, cis, temaPocet = {}, {}, {}, 0, {}
         for i in range(len(movies["movie_id"])):
             genress = genres_lists[i]
             for ge in genress:
                 if ge not in temaToCislo:
                     temaToCislo[ge] = cis
                     cisloToTema[cis] = ge
+                    temaPocet[cis] = 1
                     cis += 1
+                else:
+                    temaPocet[temaToCislo[ge]] = temaPocet[temaToCislo[ge]] + 1
             soubAtextyRaw[movies["movie_id"][i]] = movies["plot"][i]
             soubAslozky[movies["movie_id"][i]] = genress
         print(len(soubAtextyRaw))
         print(len(cisloToTema))
+        vekkPocty = {}
         for soub in soubAslozky:
             temata = soubAslozky[soub]
             vekk = [0] * len(cisloToTema)
             for j in range(len(temata)):
                 vekk[temaToCislo[temata[j]]] = 1
             vystupVek[soub] = vekk
-
-        vycisteneTexty, lemmaTexty, tagsTexty = UpravAVysictiTexty(soubAtextyRaw, vstup, jazyk)
+        print("Původně souborů:" + str(len(soubAslozky)))
+        """
+        for soub in soubAslozky:
+            vekk1 = vystupVek[soub]
+            poc = 0
+            for soub2 in soubAslozky:
+                vekk2 = vystupVek[soub2]
+                if vekk1 == vekk2:
+                    poc += 1
+            vekkPocty[soub] = poc
+        soubAslozkyPom, soubAtextyRawPom = {}, {}
+        for soub in soubAslozky:
+            if vekkPocty[soub] >= 3:
+                soubAslozkyPom[soub] = soubAslozky[soub]
+                soubAtextyRawPom[soub] = soubAtextyRaw[soub]
+        soubAslozky, soubAtextyRaw = soubAslozkyPom, soubAtextyRawPom
+        print("Použitelných souborů:" + str(len(soubAslozky)))
+        """
+        vycisteneTexty, lemmaTexty, tagsTexty = UpravAVysictiTexty(soubAtextyRaw, vstup + "_" + str(len(soubAslozky)), jazyk)
 
     else:
         soubAtextyRaw, soubAslozky = NacteniRawVstupu(vstup)
@@ -134,7 +131,10 @@ textyPracovni = lemmaTexty
 velikost, okno, alphaa, minalphaa, minimalniPocetCetnostiSlov, Ncomponents = 5000, 0.01, 0.019, 0.019, 5, 500
 velikostSlovniku = 10000
 #slovnik, slovnikPole = VytvorVocab(vstupPrac, velikostSlovniku, textyPracovni)
-slovnik, slovnikPole = VytvorVocabIDF(vstupPrac + '_IDF_', velikostSlovniku, textyPracovni)
+if vstup == "MovieSum":
+    slovnik, slovnikPole = VytvorVocabIDF(vstupPrac + '_IDF_' + str(len(soubAslozky)) + "_", velikostSlovniku, textyPracovni)
+else:
+    slovnik, slovnikPole = VytvorVocabIDF(vstupPrac + '_IDF_', velikostSlovniku, textyPracovni)
 print((slovnikPole))
 
 
@@ -161,21 +161,13 @@ hf.create_dataset('cisloToShl', data=cisloToShl)
 hf.close()
 '''
 tfidfMat = tfidf_vectorizer.transform(textyPol)
-for i in range(len(nazvySoub)):
-    if nazvySoub[i] == "170404144526":
-        poleNenul = []
-        vek = tfidfMat[i].toarray()[0]
-        for hod in vek:
-            if not hod == 0:
-                poleNenul.append(hod)
-        print(poleNenul)
-        print(len(poleNenul))
 
 np.save('TFIDFmat', [tfidf_vectorizer, nazvySoub, cisloToTema])
 
 tfidfMat = tfidfMat.toarray()
 #maticeDoc2VecVah = VytvorReprDoc2Vec(vstupPrac, textyPracovni, nazvySoub, velikost, okno, alphaa, minalphaa, minimalniPocetCetnostiSlov)
 print(tfidfMat.shape)
+"""
 # část na výpočet výsledků s LSA
 svd = TruncatedSVD(algorithm='randomized', n_components=Ncomponents, n_iter=10, random_state=None, tol=0.0)
 normalizer = Normalizer(norm='l2', copy=False)
@@ -183,15 +175,9 @@ lsa = make_pipeline(svd, normalizer)
 lsa.fit(tfidfMat)
 
 np.save('TFIDFmatLSA', [lsa, svd, normalizer])
-'''
-hf = h5py.File('TFIDFmatLSA.h5', 'w')
-hf.create_dataset('lsa', data= lsa)
-hf.create_dataset('svd', data=svd)
-hf.create_dataset('normalizer', data=normalizer)
-hf.close()
-'''
-tfidfMatLSA = lsa.transform(tfidfMat)
 
+tfidfMatLSA = lsa.transform(tfidfMat)
+"""
 pocShluku = len(cisloToTema)
 num_classes = pocShluku
 print("Počet shluků: " + str(num_classes))

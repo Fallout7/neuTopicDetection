@@ -1,0 +1,18 @@
+Vstup: TrainDataCeleNahravky; velikost relu vrstvy: 1024; batch size: 8
+    Výsledek NEU ACC: 69.39071566731141 s nastaveným prahem na: 0.05000000000000004
+Vstup: TrainDataCeleNahravky; velikost relu vrstvy: 2048; batch size: 32
+    Výsledek NEU ACC: 74.9878108239883 s nastaveným prahem na: 0.05000000000000004
+Vstup: TrainDataCeleNahravky; velikost relu vrstvy: 2048; batch size: 16
+    Výsledek NEU ACC: 68.10598626104024 s nastaveným prahem na: 0.05000000000000004
+Vstup: TrainDataCeleNahravky; velikost relu vrstvy: 1024; batch size: 8
+    Výsledek NEU ACC: 70.2970297029703 s nastaveným prahem na: 0.05000000000000004
+    0.6634358677616742 0.08231292517006802
+
+    Výsledek NEU F1: 0.651321330524871 s nastaveným prahem na: 0.023000000000000013
+    14.10891089108911 0.10249433106575964
+
+    Výsledek NEU HammLoss: 0.09892290249433107 s nastaveným prahem na: 0.9650000000000007
+    14.10891089108911 0.22304734530527326
+
+
+

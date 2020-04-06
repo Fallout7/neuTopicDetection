@@ -227,11 +227,27 @@ def neuProvedAUloz(tfidfTrain, pozadVystupTrain, num_classes, train_partition_na
         y_train, y_valid = ypom[train_index], ypom[test_index]
 
     """
-    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.25, random_state=0)
-    sss.get_n_splits(x_train, ypom)
-    for train_index, test_index in sss.split(x_train, ypom):
-        X_train, X_valid = x_train[train_index], x_train[test_index]
-        y_train, y_valid = ypom[train_index], ypom[test_index]
+    if vstup == "MovieSum":
+        vel = x_train.shape[0]
+        velVal = int((vel / 100.0) * 25.0)
+        pocTrain = vel - velVal
+        X_train, X_valid, y_train, y_valid, pouzPoz = [], [], [], [], {}
+        while len(X_train) + len(X_valid) < vel:
+            pozNah = random.randint(0, vel - 1)
+            if pozNah not in pouzPoz:
+                pouzPoz[pozNah] = pozNah
+                if len(X_train) < pocTrain:
+                    X_train.append(x_train[pozNah])
+                    y_train.append(ypom[pozNah])
+                else:
+                    X_valid.append(x_train[pozNah])
+                    y_valid.append(ypom[pozNah])
+    else:
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=0)
+        sss.get_n_splits(x_train, ypom)
+        for train_index, test_index in sss.split(x_train, ypom):
+            X_train, X_valid = x_train[train_index], x_train[test_index]
+            y_train, y_valid = ypom[train_index], ypom[test_index]
 
 
     y_valid_pom = []
